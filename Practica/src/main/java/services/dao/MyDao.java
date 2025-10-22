@@ -13,70 +13,61 @@ public class MyDao implements ICRUD {
 
     @Override
     public <T> List<T> getAll(String nameQuery, Class<T> clazz) {
-        try (EntityManager em = JPAConexion.getEntityManager()) {
+        EntityManager em = JPAConexion.getEntityManager();
+        try{
             TypedQuery<T> query = em.createNamedQuery(nameQuery, clazz);
             return query.getResultList();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return Collections.emptyList();
-        }
+        }catch(Exception ex){ex.printStackTrace();}
+        finally {em.close();}
+        return null;
     }
 
     @Override
     public <T> void insert(T entity) {
         EntityManager em = JPAConexion.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
         try {
-            tx.begin();
+            em.getTransaction().begin();
             em.persist(entity);
-            tx.commit();
+            em.getTransaction().commit();
         } catch (Exception ex) {
             ex.printStackTrace();
-            if (tx.isActive()) tx.rollback();
-        } finally {
-            em.close();
+            em.getTransaction().rollback();
         }
+        finally {em.close();}
     }
 
     @Override
     public <T> void update(T entity) {
         EntityManager em = JPAConexion.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
         try {
-            tx.begin();
+            em.getTransaction().begin();
             em.merge(entity);
-            tx.commit();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (tx.isActive()) tx.rollback();
-        } finally {
-            em.close();
-        }
+            em.getTransaction().commit();
+        }catch(Exception ex){ex.printStackTrace();
+        em.getTransaction().rollback();}
+        finally{em.close();}
     }
 
     @Override
     public <T> void delete(T entity) {
         EntityManager em = JPAConexion.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
         try {
-            tx.begin();
-            em.remove(em.merge(entity)); // asegura estado managed
-            tx.commit();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            if (tx.isActive()) tx.rollback();
-        } finally {
-            em.close();
-        }
+            em.getTransaction().begin();
+            em.remove(em.merge(entity));
+            em.getTransaction().commit();
+        } catch (Exception ex){ex.printStackTrace();
+            em.getTransaction().rollback();}
+        finally {em.close();}
     }
 
     @Override
     public <T> T findById(Integer id, Class<T> clazz) {
-        try (EntityManager em = JPAConexion.getEntityManager()) {
-            return em.find(clazz, id);
-        } catch (Exception ex) {
-            ex.printStackTrace();
+        EntityManager em = JPAConexion.getEntityManager();
+        try {
+            T entity = em.find(clazz, id);
+            return entity;
+        } catch (Exception ex) {ex.printStackTrace();}
+            finally {em.close();}
             return null;
         }
     }
-}
